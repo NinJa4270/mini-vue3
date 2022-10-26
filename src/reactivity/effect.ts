@@ -11,8 +11,8 @@ interface ReactiveEffectOptions {
 
 export const extend = Object.assign
 
-let shouldTrack = true // 是否应该收集依赖的标识
-let activeEffect: ReactiveEffect // 用来向 tarck 传递 effect fn 做依赖收集
+export let shouldTrack = true // 是否应该收集依赖的标识
+export let activeEffect: ReactiveEffect // 用来向 tarck 传递 effect fn 做依赖收集
 class ReactiveEffect<T = any>{
     public deps: any
     active = true
@@ -83,7 +83,11 @@ export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions): R
  *  target2:{}, 
  * }
  */
-const targetMap = new Map()
+
+export type Dep = Set<ReactiveEffect>
+type KeyToDepMap = Map<any, Dep>
+const targetMap = new WeakMap<any, KeyToDepMap>()
+
 export function track(target: any, key: unknown) {
     if (activeEffect && shouldTrack) {
         // target => key => dep
@@ -102,33 +106,40 @@ export function track(target: any, key: unknown) {
             depsMap.set(key, dep)
         }
 
-        // 优化 处理重复收集
-        if (!dep.has(activeEffect)) {
-            // 考虑如何拿到 effect中的 fn ？
-            // 通过一个全局变量 activeEffect 来传递
-            dep.add(activeEffect)
-            // 考虑如何在 effect 中找到 dep
-            // 通过反向收集
-            activeEffect.deps.push(dep)
-        }
+        trackEffects(dep)
+    }
+}
+
+// 抽离依赖收集逻辑 给ref使用
+export function trackEffects(dep: Dep) {
+    // 优化 处理重复收集
+    if (!dep.has(activeEffect)) {
+        // 考虑如何拿到 effect中的 fn ？
+        // 通过一个全局变量 activeEffect 来传递
+        dep.add(activeEffect)
+        // 考虑如何在 effect 中找到 dep
+        // 通过反向收集
+        activeEffect.deps.push(dep)
     }
 }
 
 // 依赖通知
 export function trigger(target: any, key: unknown) {
-    let depsMap = targetMap.get(target)
-    let dep = depsMap.get(key)
-
-
-    dep.forEach((_effect: ReactiveEffect) => {
+    const depsMap = targetMap.get(target)
+    const dep = depsMap!.get(key)
+    triggerEffects(dep)
+}
+// 抽离依赖通知逻辑 给ref使用
+export function triggerEffects(dep?: Dep) {
+    dep!.forEach((_effect: ReactiveEffect) => {
         if (_effect.scheduler) {
             _effect.scheduler()
         } else {
             _effect.run()
         }
     })
-
 }
+
 
 
 export function stop(runner: ReactiveEffectRunner) {

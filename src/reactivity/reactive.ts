@@ -1,4 +1,5 @@
 import { mutableHandlers, readonlyHandlers, shallowReadonlyHandlers } from "./baseHandlers"
+import { isObject } from "./utils"
 
 export const enum ReactiveFlags {
     IS_REACTIVE = '__v_isReactive',
@@ -43,3 +44,7 @@ export function isReadonly(value: unknown): boolean {
 export function isProxy(value: unknown): boolean {
     return isReactive(value) || isReadonly(value)
 }
+
+
+export const toReactive = <T extends unknown>(value: T): T =>
+    isObject(value) ? reactive(value) : value

@@ -18,7 +18,6 @@ function createGetter(isReadonly = false, shallow = false) {
         }
         const res = Reflect.get(target, key)
 
-
         if (shallow) {
             return res
         }
