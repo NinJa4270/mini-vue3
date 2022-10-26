@@ -20,7 +20,6 @@ describe('effect', () => {
         expect(result).toBe(11)
     })
 
-
     test('runner', () => {
         let foo = 10
         const runner = effect(() => {
@@ -32,7 +31,6 @@ describe('effect', () => {
         expect(foo).toBe(12)
         expect(r).toBe('foo')
     })
-
 
     test('scheduler', () => {
         // 1. 给 effect 传入配置选项 scheduler 
@@ -64,8 +62,6 @@ describe('effect', () => {
         expect(dummy).toBe(2)
     })
 
-
-
     test('stop', () => {
         let dummy
         const obj = reactive({ prop: 1 })
@@ -83,7 +79,6 @@ describe('effect', () => {
         runner()
         expect(dummy).toBe(3)
     })
-
 
     test('onStop', () => {
         const obj = reactive({ prop: 1 })
