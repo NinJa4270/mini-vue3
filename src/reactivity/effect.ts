@@ -1,20 +1,35 @@
+
+interface ReactiveEffectRunner<T = any> {
+    (): T
+    effect: ReactiveEffect
+}
+type EffectScheduler = (...args: any[]) => any
+interface ReactiveEffectOptions {
+    scheduler?: EffectScheduler
+}
+
 let activeEffect: ReactiveEffect // 用来向 tarck 传递 effect fn 做依赖收集
 class ReactiveEffect<T = any>{
-    constructor(public fn: () => T) {
+    constructor(public fn: () => T, public scheduler?: EffectScheduler) {
         this.fn = fn
     }
 
     run() {
-        console.log('触发 run');
         activeEffect = this
-        this.fn()
+        return this.fn()
     }
 }
 // 副作用
-export function effect<T = any>(fn: () => T) {
-    const _effect = new ReactiveEffect(fn)
+export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions): ReactiveEffectRunner {
+    const scheduler = options?.scheduler
+    const _effect = new ReactiveEffect(fn, scheduler)
+
     _effect.run()
+    const runner = _effect.run.bind(_effect) as ReactiveEffectRunner
+    return runner
 }
+
+
 
 // 依赖收集
 /**
@@ -54,7 +69,11 @@ export function trigger(target: any, key: unknown) {
 
 
     dep.forEach((_effect: ReactiveEffect) => {
-        _effect.run()
+        if (_effect.scheduler) {
+            _effect.scheduler()
+        } else {
+            _effect.run()
+        }
     })
 
 }
