@@ -4,8 +4,9 @@ import { hasChanged, } from "./utils";
 
 class RefImpl<T> {
     private _value: T
-    private _rawValue: T;
+    private _rawValue: T
     public dep: Dep
+    public readonly __v_isRef = true
     constructor(value: T) {
         this._rawValue = value
         // 判断 value 是否为对象 如果是对象 需要用 reactive包裹
@@ -44,4 +45,13 @@ function triggerRefValue(ref: RefImpl<any>) {
 
 export function ref(value: any) {
     return new RefImpl(value)
+}
+
+
+export function isRef(ref: any) {
+    return !!(ref?.__v_isRef === true)
+}
+
+export function unRef(ref: any) {
+    return isRef(ref) ? ref.value : ref
 }

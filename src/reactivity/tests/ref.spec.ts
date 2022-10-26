@@ -1,6 +1,7 @@
 import { expect, test, describe, vi } from 'vitest'
 import { effect } from '../effect'
-import { ref } from '../ref'
+import { reactive } from '../reactive'
+import { isRef, ref, unRef } from '../ref'
 
 describe('ref', () => {
 
@@ -43,5 +44,21 @@ describe('ref', () => {
         expect(dummy).toBe(1)
         count.value.a = 2
         expect(dummy).toBe(2)
+    })
+
+
+    test('isRef', () => {
+        const count = ref(1)
+        const observed = reactive({ foo: 1 })
+        expect(isRef(count)).toBe(true)
+        expect(isRef(1)).toBe(false)
+        expect(isRef(observed)).toBe(false)
+    })
+
+
+    test('unRef', () => {
+        const count = ref(1)
+        expect(unRef(count)).toBe(1)
+        expect(unRef(1)).toBe(1)
     })
 })
