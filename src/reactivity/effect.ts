@@ -13,12 +13,11 @@ export const extend = Object.assign
 
 export let shouldTrack = true // 是否应该收集依赖的标识
 export let activeEffect: ReactiveEffect // 用来向 tarck 传递 effect fn 做依赖收集
-class ReactiveEffect<T = any>{
+export class ReactiveEffect<T = any>{
     public deps: any
     active = true
-    scheduler?: EffectScheduler
     onStop?: () => void
-    constructor(public fn: () => T) {
+    constructor(public fn: () => T, public scheduler: EffectScheduler | null = null,) {
         this.fn = fn
         this.deps = []
     }
