@@ -1,11 +1,13 @@
 
 import { track, trigger } from "./effect"
-import { ReactiveFlags } from "./reactive"
+import { reactive, ReactiveFlags, readonly } from "./reactive"
+import { isObject } from "./utils"
 
 // 优化点 只创建一次 不需要每次都创建
 const get = createGetter()
 const set = createSetter()
 const readonlyGet = createGetter(true)
+
 
 function createGetter(isReadonly = false) {
     return function get(target: any, key: string | symbol) {
@@ -15,6 +17,12 @@ function createGetter(isReadonly = false) {
             return isReadonly
         }
         const res = Reflect.get(target, key)
+        // nested object
+
+        if (isObject(res)) {
+            return isReadonly ? readonly(res) : reactive(res)
+        }
+
         // 依赖收集
         if (!isReadonly) {
             track(target, key)

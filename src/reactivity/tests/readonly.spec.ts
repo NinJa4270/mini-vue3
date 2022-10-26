@@ -26,4 +26,14 @@ describe('readonly', () => {
         expect(isReadonly(warpped)).toBe(true)
         expect(isReadonly(original)).toBe(false)
     })
+
+    test('nested readonly', () => {
+        const original = { foo: 1, bar: { baz: 2 }, arr: [{ btn: 15 }, 2, 3] }
+        const warpped = readonly(original)
+        expect(warpped).not.toBe(original)
+        expect(isReadonly(warpped)).toBe(true)
+        expect(isReadonly(warpped.bar)).toBe(true)
+        expect(isReadonly(warpped.arr)).toBe(true)
+        expect(isReadonly(original.arr)).toBe(false)
+    })
 })
