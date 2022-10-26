@@ -72,7 +72,8 @@ describe('effect', () => {
         expect(dummy).toBe(2)
         // 停止监测更新
         stop(runner)
-        obj.prop = 3
+        // obj.prop = 3
+        obj.prop ++ // 又重新get
         expect(dummy).toBe(2)
 
         // stopped effect should still be manually callable

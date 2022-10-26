@@ -11,6 +11,7 @@ interface ReactiveEffectOptions {
 
 const extend = Object.assign
 
+let shouldTrack = true // 是否应该收集依赖的标识
 let activeEffect: ReactiveEffect // 用来向 tarck 传递 effect fn 做依赖收集
 class ReactiveEffect<T = any>{
     public deps: any
@@ -21,12 +22,18 @@ class ReactiveEffect<T = any>{
         this.fn = fn
         this.deps = []
     }
-
     run() {
+        // shouldTrack 来处理是否收集依赖
+        if (!this.active) {
+            return this.fn()
+        }
+        shouldTrack = true
         activeEffect = this
-        return this.fn()
+        // reset
+        const result = this.fn()
+        shouldTrack = false
+        return result
     }
-
     stop() {
         // 通过 effect 找到 dep 并清除
         // this.active 优化 多次调用stop时 不需要再去清空
@@ -78,28 +85,32 @@ export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions): R
  */
 const targetMap = new Map()
 export function track(target: any, key: unknown) {
-    // target => key => dep
-    // 获取 target => (key=>dep map)  
-    let depsMap = targetMap.get(target)
-    // 初始化 (key=>dep set) 容器
-    if (!depsMap) {
-        depsMap = new Map()
-        targetMap.set(target, depsMap)
-    }
-    // 获取 key=> (dep set) 
-    let dep = depsMap.get(key)
-    // 初始化 (dep map)  容器
-    if (!dep) {
-        dep = new Set()
-        depsMap.set(key, dep)
-    }
-    if (activeEffect) {
-        // 考虑如何拿到 effect中的 fn ？
-        // 通过一个全局变量 activeEffect 来传递
-        dep.add(activeEffect)
-        // 考虑如何在 effect 中找到 dep
-        // 通过反向收集
-        activeEffect.deps.push(dep)
+    if (activeEffect && shouldTrack) {
+        // target => key => dep
+        // 获取 target => (key=>dep map)  
+        let depsMap = targetMap.get(target)
+        // 初始化 (key=>dep set) 容器
+        if (!depsMap) {
+            depsMap = new Map()
+            targetMap.set(target, depsMap)
+        }
+        // 获取 key=> (dep set) 
+        let dep = depsMap.get(key)
+        // 初始化 (dep map)  容器
+        if (!dep) {
+            dep = new Set()
+            depsMap.set(key, dep)
+        }
+
+        // 优化 处理重复收集
+        if (!dep.has(activeEffect)) {
+            // 考虑如何拿到 effect中的 fn ？
+            // 通过一个全局变量 activeEffect 来传递
+            dep.add(activeEffect)
+            // 考虑如何在 effect 中找到 dep
+            // 通过反向收集
+            activeEffect.deps.push(dep)
+        }
     }
 }
 
