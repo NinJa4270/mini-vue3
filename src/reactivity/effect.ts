@@ -6,26 +6,62 @@ interface ReactiveEffectRunner<T = any> {
 type EffectScheduler = (...args: any[]) => any
 interface ReactiveEffectOptions {
     scheduler?: EffectScheduler
+    onStop?: () => void
 }
+
+const extend = Object.assign
 
 let activeEffect: ReactiveEffect // 用来向 tarck 传递 effect fn 做依赖收集
 class ReactiveEffect<T = any>{
-    constructor(public fn: () => T, public scheduler?: EffectScheduler) {
+    public deps: any
+    active = true
+    scheduler?: EffectScheduler
+    onStop?: () => void
+    constructor(public fn: () => T) {
         this.fn = fn
+        this.deps = []
     }
 
     run() {
         activeEffect = this
         return this.fn()
     }
+
+    stop() {
+        // 通过 effect 找到 dep 并清除
+        // this.active 优化 多次调用stop时 不需要再去清空
+        if (this.active) {
+            cleanupEffect(this)
+            if (this.onStop) {
+                this.onStop()
+            }
+            this.active = false
+        }
+    }
 }
+
+function cleanupEffect(effect: ReactiveEffect) {
+    const { deps } = effect
+    if (deps.length) {
+        for (let i = 0; i < deps.length; i++) {
+            deps[i].delete(effect)
+        }
+        deps.length = 0
+    }
+}
+
 // 副作用
 export function effect<T = any>(fn: () => T, options?: ReactiveEffectOptions): ReactiveEffectRunner {
-    const scheduler = options?.scheduler
-    const _effect = new ReactiveEffect(fn, scheduler)
+    // const scheduler = options?.scheduler
+    // const onStop = options?.onStop
+    const _effect = new ReactiveEffect(fn)
+    extend(_effect, options)
+    // _effect.onStop = onStop
+    // _effect.scheduler = scheduler
 
     _effect.run()
     const runner = _effect.run.bind(_effect) as ReactiveEffectRunner
+    runner.effect = _effect
     return runner
 }
 
@@ -57,9 +93,14 @@ export function track(target: any, key: unknown) {
         dep = new Set()
         depsMap.set(key, dep)
     }
-    // 考虑如何拿到 effect中的 fn ？
-    // 通过一个全局变量 activeEffect 来传递
-    dep.add(activeEffect)
+    if (activeEffect) {
+        // 考虑如何拿到 effect中的 fn ？
+        // 通过一个全局变量 activeEffect 来传递
+        dep.add(activeEffect)
+        // 考虑如何在 effect 中找到 dep
+        // 通过反向收集
+        activeEffect.deps.push(dep)
+    }
 }
 
 // 依赖通知
@@ -76,4 +117,9 @@ export function trigger(target: any, key: unknown) {
         }
     })
 
+}
+
+
+export function stop(runner: ReactiveEffectRunner) {
+    runner.effect.stop()
 }

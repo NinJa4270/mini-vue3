@@ -1,5 +1,5 @@
 import { expect, test, describe, vi } from 'vitest'
-import { effect } from '../effect'
+import { effect, stop } from '../effect'
 import { reactive } from '../reactive'
 
 
@@ -63,4 +63,40 @@ describe('effect', () => {
         // should have run
         expect(dummy).toBe(2)
     })
+
+
+
+    test('stop', () => {
+        let dummy
+        const obj = reactive({ prop: 1 })
+        const runner = effect(() => {
+            dummy = obj.prop
+        })
+        obj.prop = 2
+        expect(dummy).toBe(2)
+        // 停止监测更新
+        stop(runner)
+        obj.prop = 3
+        expect(dummy).toBe(2)
+
+        // stopped effect should still be manually callable
+        runner()
+        expect(dummy).toBe(3)
+    })
+
+
+    test('onStop', () => {
+        const obj = reactive({ prop: 1 })
+        const onStop = vi.fn()
+        let dummy
+
+        const runner = effect(() => {
+            dummy = obj.prop
+        }, {
+            onStop
+        })
+        stop(runner)
+        expect(onStop).toBeCalledTimes(1)
+    })
+
 })
