@@ -9,7 +9,7 @@ interface ReactiveEffectOptions {
     onStop?: () => void
 }
 
-const extend = Object.assign
+export const extend = Object.assign
 
 let shouldTrack = true // 是否应该收集依赖的标识
 let activeEffect: ReactiveEffect // 用来向 tarck 传递 effect fn 做依赖收集
