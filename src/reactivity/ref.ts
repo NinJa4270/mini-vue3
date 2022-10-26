@@ -1,5 +1,5 @@
 import { activeEffect, Dep, shouldTrack, trackEffects, triggerEffects } from "./effect";
-import { toReactive } from "./reactive";
+import { isReactive, toReactive } from "./reactive";
 import { hasChanged, } from "./utils";
 
 class RefImpl<T> {
@@ -52,6 +52,24 @@ export function isRef(ref: any) {
     return !!(ref?.__v_isRef === true)
 }
 
-export function unRef(ref: any) {
+export function unref(ref: any) {
     return isRef(ref) ? ref.value : ref
+}
+
+export function proxyRefs(objectWithRefs: any) {
+    return isReactive(objectWithRefs) ? objectWithRefs : new Proxy(objectWithRefs, {
+        get(target, key) {
+            return unref(Reflect.get(target, key))
+        },
+        set(target, key, newVal) {
+            const oldValue = target[key]
+            // 原始值是 ref 新值不是 ref 去修改 value
+            if (isRef(oldValue) && !isRef(newVal)) {
+                return target[key].value = newVal
+            } else {
+                // 否则 直接去替换
+                return Reflect.set(target, key, newVal)
+            }
+        }
+    })
 }

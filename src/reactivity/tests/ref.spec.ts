@@ -1,7 +1,7 @@
 import { expect, test, describe, vi } from 'vitest'
 import { effect } from '../effect'
 import { reactive } from '../reactive'
-import { isRef, ref, unRef } from '../ref'
+import { isRef, proxyRefs, ref, unref } from '../ref'
 
 describe('ref', () => {
 
@@ -58,7 +58,31 @@ describe('ref', () => {
 
     test('unRef', () => {
         const count = ref(1)
-        expect(unRef(count)).toBe(1)
-        expect(unRef(1)).toBe(1)
+        expect(unref(count)).toBe(1)
+        expect(unref(1)).toBe(1)
+    })
+
+
+    test('proxyRefs', () => {
+        const user = {
+            age: ref(10),
+            name: 'xxx'
+        }
+
+        const proxyUser = proxyRefs(user)
+        // 可以省略 .value
+        expect(user.age.value).toBe(10)
+        expect(proxyUser.age).toBe(10)
+        expect(proxyUser.name).toBe('xxx')
+
+
+        proxyUser.age = 20
+        expect(proxyUser.age).toBe(20)
+        expect(user.age.value).toBe(20)
+
+
+        proxyUser.age = ref(10)
+        expect(user.age.value).toBe(10)
+        expect(proxyUser.age).toBe(10)
     })
 })
