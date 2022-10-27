@@ -4,13 +4,13 @@ export const App = {
 
     setup() {
         return {
-            mas: 'mini-vue3'
+            msg: 'mini-vue3 !!!##'
         }
     },
     render() {
         return h('div', { id: 'root', class: ['class-red', 'class-display'] },
-            // "hello" + this.msg
-            [h("p", { class: 'class-p' }, 'hi'), h("span", { class: 'class-span' }, 'mini-vue')]
+            "hello ! " + this.msg
+            // [h("p", { class: 'class-p' }, 'hi'), h("span", { class: 'class-span' }, 'mini-vue')]
         )
     }
 }

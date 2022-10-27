@@ -7,7 +7,6 @@ export function render(vnode: any, container: any) {
 }
 
 function patch(vnode: any, container: any) {
-    console.log('%crenderer.ts line:9 vnode.type', 'color: #007acc;', vnode.type);
     // 判断处理
     if (typeof vnode.type === 'string') {
         processElement(vnode, container)
@@ -54,8 +53,9 @@ function mountComponent(vnode: any, container: any) {
     setupRenderEffect(instance, container)
 }
 function setupRenderEffect(instance: any, container: any) {
-    const subTree = instance.render()
-
+    const { proxy } = instance
+    const subTree = instance.render.call(proxy)
+    console.log('%crenderer.ts line:57 instance', 'color: #007acc;', proxy);
     // vnode => patch
     // vnode => element => mountElement
     patch(subTree, container)
