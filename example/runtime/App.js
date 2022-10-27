@@ -12,8 +12,7 @@ export const App = {
     render() {
         window.self = this
         return h('div', { id: 'root', class: ['class-red', 'class-display'] },
-            "hello ! " + this.msg
-            // [h("p", { class: 'class-p' }, 'hi'), h("span", { class: 'class-span' }, 'mini-vue')]
+            [h("p", { class: 'class-p' }, "hello ! " + this.msg), h("span", { class: 'class-span' }, 'mini-vue')]
         )
     }
 }
