@@ -2,14 +2,22 @@
   "name": "mini-vue3",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/mini-vue.cjs.js",
+  "module": "lib/mini-vue.esm.js",
+  "type": "module",
+
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "build": "rollup -c rollup.config.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-typescript": "^9.0.2",
+    "rollup": "^3.2.3",
+    "tslib": "^2.4.0",
     "typescript": "^4.8.4",
     "vitest": "^0.24.3"
   }
