@@ -2,7 +2,7 @@ import { isObject } from "../shared";
 import { ShapeFlags } from "../shared/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component"
 
-export function render(vnode: any, container: any) {
+export function render(vnode: any, container: HTMLElement) {
     // patch
     patch(vnode, container)
 }
@@ -17,14 +17,14 @@ function patch(vnode: any, container: any) {
     }
 
 }
-function processElement(vnode: any, container: any) {
+function processElement(vnode: any, container: HTMLElement) {
     // init 
     mountElement(vnode, container)
     // update
 }
-function mountElement(vnode: any, container: any) {
+function mountElement(vnode: any, container: HTMLElement) {
     // 存到 vnode 上
-    const el = (vnode.el = document.createElement(vnode.type))
+    const el: HTMLElement = (vnode.el = document.createElement(vnode.type))
     const { children, props, shapeFlag } = vnode
 
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
@@ -33,16 +33,22 @@ function mountElement(vnode: any, container: any) {
         mountChildren(vnode, el)
     }
 
+    // props
+    const isOn = (key: string) => /^on[A-Z]/.test(key)
     for (let key in props) {
         const prop = props[key]
-        el.setAttribute(key, prop)
+        if (isOn(key)) {
+            const event = key.slice(2).toLocaleLowerCase()
+            el.addEventListener(event, prop)
+        } else {
+            el.setAttribute(key, prop)
+        }
     }
-
 
     container.append(el)
 }
 
-function mountChildren(vnode: any, container: any) {
+function mountChildren(vnode: any, container: HTMLElement) {
     vnode.children.forEach((v: any) => {
         patch(v, container)
     })
