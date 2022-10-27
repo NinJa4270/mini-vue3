@@ -47,12 +47,12 @@ function processComponent(vnode: any, container: any) {
     mountComponent(vnode, container)
 }
 
-function mountComponent(vnode: any, container: any) {
-    const instance = createComponentInstance(vnode)
+function mountComponent(initialVNode: any, container: any) {
+    const instance = createComponentInstance(initialVNode)
     setupComponent(instance)
-    setupRenderEffect(instance, container)
+    setupRenderEffect(instance, initialVNode, container)
 }
-function setupRenderEffect(instance: any, container: any) {
+function setupRenderEffect(instance: any, initialVNode: any, container: any) {
     const { proxy } = instance
     const subTree = instance.render.call(proxy)
     // vnode => patch
@@ -61,6 +61,6 @@ function setupRenderEffect(instance: any, container: any) {
 
     // 组件的 所有的 element 都处理完毕
     // 将根节点的el 赋值到 当前组件的虚拟节点上
-    instance.vnode.el = subTree.el
+    initialVNode.el = subTree.el
 }
 
