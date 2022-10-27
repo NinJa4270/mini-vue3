@@ -44,19 +44,19 @@ function createSetter() {
     }
 }
 
-export const mutableHandlers = {
+export const mutableHandlers: ProxyHandler<any> = {
     get,
     set
 }
 
-export const readonlyHandlers = {
+export const readonlyHandlers: ProxyHandler<any> = {
     get: readonlyGet,
-    set(target: any, key: unknown) {
+    set(target, key) {
         console.warn(`Set operation on key "${String(key)}" failed: target is readonly.`, target)
         return true
     },
 }
 
-export const shallowReadonlyHandlers = extend({}, readonlyHandlers, {
+export const shallowReadonlyHandlers: ProxyHandler<any> = extend({}, readonlyHandlers, {
     get: shallowReadonlyGet
 })

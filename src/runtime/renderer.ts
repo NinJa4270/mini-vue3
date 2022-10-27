@@ -12,7 +12,6 @@ function patch(vnode: any, container: any) {
         processElement(vnode, container)
     } else if (isObject(vnode.type)) {
         processComponent(vnode, container)
-
     }
 
 }
@@ -22,7 +21,8 @@ function processElement(vnode: any, container: any) {
     // update
 }
 function mountElement(vnode: any, container: any) {
-    const el = document.createElement(vnode.type)
+    // 存到 vnode 上
+    const el = (vnode.el = document.createElement(vnode.type))
     const { children, props } = vnode
     if (Array.isArray(children)) {
         mountChildren(vnode, el)
@@ -55,9 +55,12 @@ function mountComponent(vnode: any, container: any) {
 function setupRenderEffect(instance: any, container: any) {
     const { proxy } = instance
     const subTree = instance.render.call(proxy)
-    console.log('%crenderer.ts line:57 instance', 'color: #007acc;', proxy);
     // vnode => patch
     // vnode => element => mountElement
     patch(subTree, container)
+
+    // 组件的 所有的 element 都处理完毕
+    // 将根节点的el 赋值到 当前组件的虚拟节点上
+    instance.vnode.el = subTree.el
 }
 
