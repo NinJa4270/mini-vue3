@@ -1,6 +1,7 @@
 import { ShapeFlags } from "../shared/shapeFlags"
+import { ComponentInternalInstance } from "./component"
 
-export function initSlots(instance: any, children: any) {
+export function initSlots(instance: ComponentInternalInstance, children: any) {
     const { vnode } = instance
     if (vnode.shapeFlag & ShapeFlags.SLOTS_CHILDREN) {
         normalizeObjectSlots(children, instance.slots)

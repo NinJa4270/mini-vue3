@@ -1,29 +1,29 @@
 import { ShapeFlags } from "../shared/shapeFlags";
-import { createComponentInstance, setupComponent } from "./component"
+import { ComponentInternalInstance, createComponentInstance, setupComponent } from "./component"
 import { Fragment, Text } from "./vnode";
 
-export function render(vnode: any, container: HTMLElement) {
+export function render(vnode: any, container: HTMLElement,) {
     // patch
-    patch(vnode, container)
+    patch(vnode, container, null)
 }
 
-function patch(vnode: any, container: HTMLElement) {
+function patch(vnode: any, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
     // 判断处理
     const { type, shapeFlag } = vnode
 
     // 需要特殊处理的 type 
     switch (type) {
         case Fragment:
-            processFragment(vnode, container)
+            processFragment(vnode, container, parentComponent)
             break
         case Text:
             processText(vnode, container)
             break
         default:
             if (shapeFlag & ShapeFlags.ELEMENT) {
-                processElement(vnode, container)
+                processElement(vnode, container, parentComponent)
             } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-                processComponent(vnode, container)
+                processComponent(vnode, container, parentComponent)
             }
             break
     }
@@ -31,12 +31,12 @@ function patch(vnode: any, container: HTMLElement) {
 }
 
 // 处理 element
-function processElement(vnode: any, container: HTMLElement) {
+function processElement(vnode: any, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
     // init 
-    mountElement(vnode, container)
+    mountElement(vnode, container, parentComponent)
     // update
 }
-function mountElement(vnode: any, container: HTMLElement) {
+function mountElement(vnode: any, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
     // 存到 vnode 上
     const el: HTMLElement = (vnode.el = document.createElement(vnode.type))
     const { children, props, shapeFlag } = vnode
@@ -44,7 +44,7 @@ function mountElement(vnode: any, container: HTMLElement) {
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
         el.textContent = children
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-        mountChildren(vnode, el)
+        mountChildren(vnode, el, parentComponent)
     }
 
     // props
@@ -62,19 +62,19 @@ function mountElement(vnode: any, container: HTMLElement) {
     container.append(el)
 }
 
-function mountChildren(vnode: any, container: HTMLElement) {
+function mountChildren(vnode: any, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
     vnode.children.forEach((v: any) => {
-        patch(v, container)
+        patch(v, container, parentComponent)
     })
 }
 
 // 处理 component
-function processComponent(vnode: any, container: HTMLElement) {
-    mountComponent(vnode, container)
+function processComponent(vnode: any, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
+    mountComponent(vnode, container, parentComponent)
 }
 
-function mountComponent(initialVNode: any, container: HTMLElement) {
-    const instance = createComponentInstance(initialVNode)
+function mountComponent(initialVNode: any, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
+    const instance = createComponentInstance(initialVNode, parentComponent)
     setupComponent(instance)
     setupRenderEffect(instance, initialVNode, container)
 }
@@ -83,7 +83,7 @@ function setupRenderEffect(instance: any, initialVNode: any, container: any) {
     const subTree = instance.render.call(proxy)
     // vnode => patch
     // vnode => element => mountElement
-    patch(subTree, container)
+    patch(subTree, container, instance)
 
     // 组件的 所有的 element 都处理完毕
     // 将根节点的el 赋值到 当前组件的虚拟节点上
@@ -91,8 +91,8 @@ function setupRenderEffect(instance: any, initialVNode: any, container: any) {
 }
 
 // 处理 fragment
-function processFragment(vnode: any, container: HTMLElement) {
-    mountChildren(vnode, container)
+function processFragment(vnode: any, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
+    mountChildren(vnode, container, parentComponent)
 }
 
 // 处理 text

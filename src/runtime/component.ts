@@ -4,27 +4,44 @@ import { initProps } from "./componentProps"
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance"
 import { initSlots } from "./componentSlots"
 
-export function createComponentInstance(vnode: any) {
-    const component = {
+export interface ComponentInternalInstance {
+    proxy: any
+    render: any
+    vnode: any
+    type: any
+    setupState: any
+    props: any
+    emit: any
+    slots: any
+    provides: any,
+    parent: ComponentInternalInstance | null
+}
+
+export function createComponentInstance(vnode: any, parent: ComponentInternalInstance | null = null) {
+    const instance: ComponentInternalInstance = {
+        proxy: null,
+        render: null,
         vnode,
         type: vnode.type,
         setupState: {},
         props: {},
         emit: () => { },
-        slots: {}
+        slots: {},
+        provides: parent ? parent.provides : {},
+        parent
     }
-    component.emit = emit.bind(null, component) as any
-    return component
+    instance.emit = emit.bind(null, instance) as any
+    return instance
 }
 
-export function setupComponent(instance: any) {
+export function setupComponent(instance: ComponentInternalInstance) {
     initProps(instance, instance.vnode.props)
     initSlots(instance, instance.vnode.children)
     setupStatefulComponent(instance)
 }
 
 
-function setupStatefulComponent(instance: any) {
+function setupStatefulComponent(instance: ComponentInternalInstance) {
     const Component = instance.type
 
     // ctx 代理
@@ -39,7 +56,7 @@ function setupStatefulComponent(instance: any) {
     }
 }
 
-function handleSetupResult(instance: any, setupResult: any) {
+function handleSetupResult(instance: ComponentInternalInstance, setupResult: any) {
     // TODO: function object
     if (typeof setupResult === 'object') {
         instance.setupState = setupResult
@@ -47,17 +64,17 @@ function handleSetupResult(instance: any, setupResult: any) {
 
     finishComponentSetup(instance)
 }
-function finishComponentSetup(instance: any) {
+function finishComponentSetup(instance: ComponentInternalInstance) {
     const component = instance.type
     if (component.render) {
         instance.render = component.render
     }
 }
-let currentInstance: any = null
+let currentInstance: ComponentInternalInstance | null = null
 export function getCurrentInstance() {
     return currentInstance
 }
 
-function setCurrentInstance(instance: any) {
+function setCurrentInstance(instance: ComponentInternalInstance | null) {
     currentInstance = instance
 }

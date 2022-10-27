@@ -1,4 +1,6 @@
-export function emit(instance: any, event: string, ...args: any[]) {
+import { ComponentInternalInstance } from "./component"
+
+export function emit(instance: ComponentInternalInstance, event: string, ...args: any[]) {
     // 从组件中 找到对应的 event
     const { props } = instance
 
