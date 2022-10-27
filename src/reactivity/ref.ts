@@ -1,6 +1,6 @@
 import { activeEffect, Dep, shouldTrack, trackEffects, triggerEffects } from "./effect";
 import { isReactive, toReactive } from "./reactive";
-import { hasChanged, } from "./utils";
+import { hasChanged, } from "../shared";
 
 class RefImpl<T> {
     private _value: T

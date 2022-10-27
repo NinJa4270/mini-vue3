@@ -1,7 +1,7 @@
 
 import { extend, track, trigger } from "./effect"
 import { reactive, ReactiveFlags, readonly } from "./reactive"
-import { isObject } from "./utils"
+import { isObject } from "../shared"
 
 // 优化点 只创建一次 不需要每次都创建
 const get = createGetter()

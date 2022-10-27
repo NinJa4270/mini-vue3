@@ -8,6 +8,9 @@ export const App = {
         }
     },
     render() {
-        return h('div', "hello" + this.msg)
+        return h('div', { id: 'root', class: ['class-red', 'class-display'] },
+            // "hello" + this.msg
+            [h("p", { class: 'class-p' }, 'hi'), h("span", { class: 'class-span' }, 'mini-vue')]
+        )
     }
 }
