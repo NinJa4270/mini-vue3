@@ -5,7 +5,8 @@ export type PublicPropertiesMap = Record<
     (i: any) => any
 >
 const publicPropertiesMap: PublicPropertiesMap = {
-    $el: (i: any) => i.vnode.el
+    $el: (i: any) => i.vnode.el,
+    $slots: (i: any) => i.slots
 } as PublicPropertiesMap
 
 export const PublicInstanceProxyHandlers: ProxyHandler<any> = {
