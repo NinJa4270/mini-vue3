@@ -1,4 +1,4 @@
-import { shallowReadonly } from "../reactivity/reactive"
+import { shallowReadonly } from "../reactivity"
 import { emit } from "./componentEmit"
 import { initProps } from "./componentProps"
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance"
@@ -32,7 +32,9 @@ function setupStatefulComponent(instance: any) {
 
     const { setup } = Component
     if (setup) {
+        setCurrentInstance(instance)
         const setupResult = setup(shallowReadonly(instance.props), { emit: instance.emit })
+        setCurrentInstance(null)
         handleSetupResult(instance, setupResult)
     }
 }
@@ -51,4 +53,11 @@ function finishComponentSetup(instance: any) {
         instance.render = component.render
     }
 }
+let currentInstance: any = null
+export function getCurrentInstance() {
+    return currentInstance
+}
 
+function setCurrentInstance(instance: any) {
+    currentInstance = instance
+}

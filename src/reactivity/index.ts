@@ -1,0 +1,1 @@
+export { shallowReadonly } from './reactive'
