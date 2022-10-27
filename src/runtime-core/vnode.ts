@@ -3,9 +3,24 @@ import { ShapeFlags } from "../shared/shapeFlags";
 export const Fragment = Symbol('Fragment')
 export const Text = Symbol('Text')
 
-export function createVNode(type: any, props?: any, children?: any) {
+export type VNodeTypes =
+    | string
+    | VNode
+    | typeof Text
+    | typeof Comment
+    | typeof Fragment
+export interface VNode {
+    type: VNodeTypes
+    props: any
+    children: VNode[] | string
+    el: HTMLElement | Text | null
+    shapeFlag: number
+}
+
+
+export function createVNode(type: VNodeTypes, props?: any, children?: any) {
     const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : ShapeFlags.STATEFUL_COMPONENT
-    const vnode = {
+    const vnode: VNode = {
         type,
         props,
         children,

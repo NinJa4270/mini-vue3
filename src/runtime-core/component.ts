@@ -1,4 +1,4 @@
-import { shallowReadonly } from "../reactivity"
+import { proxyRefs, shallowReadonly } from "../reactivity"
 import { emit } from "./componentEmit"
 import { initProps } from "./componentProps"
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance"
@@ -14,7 +14,9 @@ export interface ComponentInternalInstance {
     emit: any
     slots: any
     provides: any,
+    subTree: any,
     parent: ComponentInternalInstance | null
+    isMounted: boolean
 }
 
 export function createComponentInstance(vnode: any, parent: ComponentInternalInstance | null = null) {
@@ -28,7 +30,10 @@ export function createComponentInstance(vnode: any, parent: ComponentInternalIns
         emit: () => { },
         slots: {},
         provides: parent ? parent.provides : {},
-        parent
+        parent,
+        subTree: null,
+
+        isMounted: false
     }
     instance.emit = emit.bind(null, instance) as any
     return instance
@@ -59,7 +64,8 @@ function setupStatefulComponent(instance: ComponentInternalInstance) {
 function handleSetupResult(instance: ComponentInternalInstance, setupResult: any) {
     // TODO: function object
     if (typeof setupResult === 'object') {
-        instance.setupState = setupResult
+        // 通过  proxyRefs 是 setup 返回值 不需要访问 .value
+        instance.setupState = proxyRefs(setupResult)
     }
 
     finishComponentSetup(instance)

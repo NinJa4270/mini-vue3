@@ -1,1 +1,3 @@
-export { shallowReadonly } from './reactive'
+export { shallowReadonly, reactive } from './reactive'
+export { ref, proxyRefs } from './ref'
+export { effect } from './effect'
