@@ -1,5 +1,6 @@
 import { isString } from "../shared"
 import { ShapeFlags } from "../shared/shapeFlags";
+export const Fragment = Symbol('Fragment')
 
 export function createVNode(type: any, props?: any, children?: any) {
     const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : ShapeFlags.STATEFUL_COMPONENT
@@ -18,7 +19,7 @@ export function createVNode(type: any, props?: any, children?: any) {
     }
 
     if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-        if (typeof children === 'object') { 
+        if (typeof children === 'object') {
             vnode.shapeFlag |= ShapeFlags.SLOTS_CHILDREN
         }
     }
