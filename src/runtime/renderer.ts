@@ -67,7 +67,6 @@ function mountComponent(initialVNode: any, container: any) {
 function setupRenderEffect(instance: any, initialVNode: any, container: any) {
     const { proxy } = instance
     const subTree = instance.render.call(proxy)
-    console.log('%crenderer.ts line:58 instance', 'color: #007acc;', instance);
     // vnode => patch
     // vnode => element => mountElement
     patch(subTree, container)
