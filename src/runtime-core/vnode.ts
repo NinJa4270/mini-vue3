@@ -15,6 +15,7 @@ export interface VNode {
     children: VNode[] | string
     el: HTMLElement | Text | null
     shapeFlag: number
+    key?: undefined
 }
 
 
@@ -24,6 +25,7 @@ export function createVNode(type: VNodeTypes, props?: any, children?: any) {
         type,
         props,
         children,
+        key: props?.key || null,
         el: null,
         shapeFlag
     }
@@ -45,3 +47,8 @@ export function createVNode(type: VNodeTypes, props?: any, children?: any) {
 export function createTextVNode(text: string) {
     return createVNode(Text, {}, text)
 }
+
+export function isSameVNodeType(n1: VNode, n2: VNode): boolean {
+    return n1.type === n2.type && n1.key === n2.key
+}
+
