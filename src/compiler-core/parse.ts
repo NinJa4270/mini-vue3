@@ -17,7 +17,6 @@ function parseChildren(context: ParserContext): TemplateChildNode[] {
         node = parseInterpolation(context)
     } else if (s[0] === '<') {
         if (/[a-z]/i.test(s[1])) {
-            console.log('%cparse.ts line:19 element', 'color: #007acc;',);
             node = parseElement(context)
         }
     }
@@ -32,10 +31,9 @@ function parseElement(context: ParserContext): ElementNode {
     // <div></div>
     // 解析tag
     const element = parseTag(context, TagType.Start)
-
     // 删除结束
     parseTag(context, TagType.End)
-    // 删除解析结果
+    
     return element
 }
 
@@ -50,6 +48,7 @@ function parseTag(context: ParserContext, type: TagType.End): void
 function parseTag(context: ParserContext, type: TagType): ElementNode | undefined {
     const match: any = /^<\/?([a-z]*)/i.exec(context.source) // 结束
     const tag = match[1]
+    // 删除解析结果
     advanceBy(context, match[0].length) // <div
     advanceBy(context, 1) // >
 
