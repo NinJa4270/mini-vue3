@@ -3,6 +3,7 @@ import { ComponentInternalInstance, createComponentInstance, setupComponent } fr
 import { createAppAPI } from "./apiCreateApp";
 import { Fragment, Text, VNode } from "./vnode";
 import { effect } from "../reactivity";
+import { EMPTY_OBJ } from "../shared";
 
 export interface RendererOptions {
     createElement: any
@@ -13,7 +14,6 @@ export interface RendererOptions {
 export function createRenderer(options: RendererOptions) {
 
     const { createElement: hostCreateElement, patchProp: hostPatchProp, insert: hostInsert } = options
-
 
     function render(vnode: VNode, container: HTMLElement,) {
         // patch
@@ -58,6 +58,32 @@ export function createRenderer(options: RendererOptions) {
     // 更新 element
     function patchElement(n1: VNode, n2: VNode, container: HTMLElement) {
         // 对比
+        // 对比props
+        const oldProps = n1.props || EMPTY_OBJ
+        const newProps = n2.props || EMPTY_OBJ
+        const el = (n2.el = n1.el)
+        patchProps(el, oldProps, newProps)
+    }
+    function patchProps(el: any, oldProps: any, newProps: any) {
+        if (oldProps !== newProps) {
+            // 处理新props
+            for (const key in newProps) {
+                const prevProp = oldProps[key]
+                const nextProp = newProps[key]
+                if (prevProp !== nextProp) {
+                    hostPatchProp(el, key, prevProp, nextProp)
+                }
+            }
+            if (oldProps !== EMPTY_OBJ) {
+                // 处理老props
+                for (const key in oldProps) {
+                    if (!(key in newProps)) {
+                        hostPatchProp(el, key, oldProps[key], null)
+                    }
+
+                }
+            }
+        }
     }
 
     function mountElement(vnode: VNode, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
@@ -82,7 +108,7 @@ export function createRenderer(options: RendererOptions) {
             // } else {
             //     el.setAttribute(key, prop)
             // }
-            hostPatchProp(el, key, prop)
+            hostPatchProp(el, key, null, prop)
         }
 
         // container.append(el)

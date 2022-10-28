@@ -5,12 +5,16 @@ const isOn = (key: string) => /^on[A-Z]/.test(key)
 function createElement(type: any) {
     return document.createElement(type)
 }
-function patchProp(el: HTMLElement, key: string, prop: any) {
+function patchProp(el: HTMLElement, key: string, prevProp: any, nextProp: any) {
     if (isOn(key)) {
         const event = key.slice(2).toLocaleLowerCase()
-        el.addEventListener(event, prop)
+        el.addEventListener(event, nextProp)
     } else {
-        el.setAttribute(key, prop)
+        if (nextProp === undefined || nextProp === null) {
+            el.removeAttribute(key)
+        } else {
+            el.setAttribute(key, nextProp)
+        }
     }
 }
 function insert(el: HTMLElement, container: HTMLElement) {

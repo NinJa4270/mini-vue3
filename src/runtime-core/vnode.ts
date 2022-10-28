@@ -27,7 +27,6 @@ export function createVNode(type: VNodeTypes, props?: any, children?: any) {
         el: null,
         shapeFlag
     }
-
     if (children) {
         vnode.shapeFlag |= isString(children)
             ? ShapeFlags.TEXT_CHILDREN
