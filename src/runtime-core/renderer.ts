@@ -353,11 +353,11 @@ export function createRenderer(options: RendererOptions) {
         const instance = (n2.component = n1.component)
         if (shouldUpdateComponent(n1, n2)) { // 判断当前组件是否需要更新
             // 调用组件的 render 重新生成vnode
-            instance.next = n2
+            instance!.next = n2
             instance.update()
         } else {
             n2.el = n1.el
-            instance.vnode = n2
+            instance!.vnode = n2
         }
     }
 
@@ -370,7 +370,7 @@ export function createRenderer(options: RendererOptions) {
 
     function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VNode, container: HTMLElement, anchor: Node | null) {
         // 通过 effect 包裹 重新出发render 生成虚拟DOM
-        instance.update = effect(() => {
+        instance!.update = effect(() => {
             if (!instance.isMounted) {
                 // 初始化
                 console.log('%crenderer.ts line:372 mount', 'color: #007acc;', instance);

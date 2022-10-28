@@ -1,4 +1,4 @@
-const queue = []
+const queue: any[] = []
 
 let isFlushPending = false
 
