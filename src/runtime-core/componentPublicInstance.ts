@@ -1,12 +1,14 @@
 import { hasOwn } from "../shared"
+import { ComponentInternalInstance } from "./component"
 
 export type PublicPropertiesMap = Record<
     string,
-    (i: any) => any
+    (i: ComponentInternalInstance) => any
 >
 const publicPropertiesMap: PublicPropertiesMap = {
-    $el: (i: any) => i.vnode.el,
-    $slots: (i: any) => i.slots
+    $el: (i: ComponentInternalInstance) => i.vnode.el,
+    $slots: (i: ComponentInternalInstance) => i.slots,
+    $props: (i: ComponentInternalInstance) => i.props
 } as PublicPropertiesMap
 
 export const PublicInstanceProxyHandlers: ProxyHandler<any> = {

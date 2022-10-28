@@ -3,6 +3,7 @@ import { emit } from "./componentEmit"
 import { initProps } from "./componentProps"
 import { PublicInstanceProxyHandlers } from "./componentPublicInstance"
 import { initSlots } from "./componentSlots"
+import { VNode } from "./vnode"
 
 export interface ComponentInternalInstance {
     proxy: any
@@ -17,6 +18,9 @@ export interface ComponentInternalInstance {
     subTree: any,
     parent: ComponentInternalInstance | null
     isMounted: boolean
+    update: any
+    next: VNode | null
+
 }
 
 export function createComponentInstance(vnode: any, parent: ComponentInternalInstance | null = null) {
@@ -33,7 +37,9 @@ export function createComponentInstance(vnode: any, parent: ComponentInternalIns
         parent,
         subTree: null,
 
-        isMounted: false
+        isMounted: false,
+        update: null,
+        next: null
     }
     instance.emit = emit.bind(null, instance) as any
     return instance

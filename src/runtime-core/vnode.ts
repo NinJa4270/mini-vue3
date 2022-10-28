@@ -1,5 +1,6 @@
 import { isString } from "../shared"
 import { ShapeFlags } from "../shared/shapeFlags";
+import { ComponentInternalInstance } from "./component";
 export const Fragment = Symbol('Fragment')
 export const Text = Symbol('Text')
 
@@ -15,7 +16,8 @@ export interface VNode {
     children: VNode[] | string
     el: HTMLElement | Text | null
     shapeFlag: number
-    key?: undefined
+    key?: undefined,
+    component: ComponentInternalInstance | null
 }
 
 
@@ -27,7 +29,9 @@ export function createVNode(type: VNodeTypes, props?: any, children?: any) {
         children,
         key: props?.key || null,
         el: null,
-        shapeFlag
+        shapeFlag,
+        component: null,
+
     }
     if (children) {
         vnode.shapeFlag |= isString(children)

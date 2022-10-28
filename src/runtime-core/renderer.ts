@@ -4,6 +4,7 @@ import { createAppAPI } from "./apiCreateApp";
 import { Fragment, isSameVNodeType, Text, VNode } from "./vnode";
 import { effect } from "../reactivity";
 import { EMPTY_OBJ } from "../shared";
+import { shouldUpdateComponent } from "./componentRenderUtils";
 
 export interface RendererOptions {
     createElement: any
@@ -23,10 +24,8 @@ export function createRenderer(options: RendererOptions) {
     }
 
     function patch(n1: VNode | null, n2: VNode, container: HTMLElement, anchor: Node | null, parentComponent: ComponentInternalInstance | null) {
-
         // 判断处理
         const { type, shapeFlag } = n2
-
         // 需要特殊处理的 type 
         switch (type) {
             case Fragment:
@@ -135,8 +134,6 @@ export function createRenderer(options: RendererOptions) {
          *         [e2]
          *  
          * */
-        console.log('%crenderer.ts line:132 c1', 'color: #007acc;', c1);
-        console.log('%crenderer.ts line:133 c2', 'color: #007acc;', c2);
         let i = 0
         const l2 = c2.length
         let e1 = c1.length - 1
@@ -341,20 +338,41 @@ export function createRenderer(options: RendererOptions) {
 
     // 处理 component
     function processComponent(n1: VNode | null, n2: VNode, container: HTMLElement, anchor: Node | null, parentComponent: ComponentInternalInstance | null) {
-        mountComponent(n2, container, anchor, parentComponent)
+        if (!n1) {
+            // init
+            mountComponent(n2, container, anchor, parentComponent)
+        } else {
+            // update
+            updateComponent(n1, n2)
+        }
     }
 
+    // 更新 component
+    function updateComponent(n1: VNode, n2: VNode) {
+        const instance = (n2.component = n1.component)
+        if (shouldUpdateComponent(n1, n2)) { // 判断当前组件是否需要更新
+            // 调用组件的 render 重新生成vnode
+            instance.next = n2
+            instance.update()
+        } else {
+            n2.el = n1.el
+            instance.vnode = n2
+        }
+    }
+
+    // 挂载 component
     function mountComponent(initialVNode: VNode, container: HTMLElement, anchor: Node | null, parentComponent: ComponentInternalInstance | null) {
-        const instance = createComponentInstance(initialVNode, parentComponent)
+        const instance = (initialVNode.component = createComponentInstance(initialVNode, parentComponent))
         setupComponent(instance)
         setupRenderEffect(instance, initialVNode, container, anchor)
     }
 
     function setupRenderEffect(instance: ComponentInternalInstance, initialVNode: VNode, container: HTMLElement, anchor: Node | null) {
         // 通过 effect 包裹 重新出发render 生成虚拟DOM
-        effect(() => {
+        instance.update = effect(() => {
             if (!instance.isMounted) {
                 // 初始化
+                console.log('%crenderer.ts line:372 mount', 'color: #007acc;', instance);
                 const { proxy } = instance
                 const subTree = (instance.subTree = instance.render.call(proxy))
                 // vnode => patch
@@ -367,6 +385,18 @@ export function createRenderer(options: RendererOptions) {
                 instance.isMounted = true
             } else {
                 // 更新
+                console.log('%crenderer.ts line:384 update', 'color: #007acc;', instance);
+                // 更新组件实例的属性
+                // 先更新组件的props 组件才能拿到最新的props
+                // 先拿到更新前后的虚拟节点 
+                const { next, vnode } = instance
+                if (next) {
+                    //  更新真实dom
+                    next.el = vnode.el
+                    // 更新属性
+                    updateComponentPreRender(instance, next)
+                }
+
                 const { proxy } = instance
                 const prevTree = instance.subTree
                 const nextTree = instance.render.call(proxy)
@@ -374,6 +404,13 @@ export function createRenderer(options: RendererOptions) {
                 patch(prevTree, nextTree, container, anchor, instance)
             }
         })
+    }
+
+    // 更新组件实例的属性
+    function updateComponentPreRender(instance: ComponentInternalInstance, nextVNode: VNode) {
+        instance.vnode = nextVNode
+        instance.next = null
+        instance.props = nextVNode.props
     }
 
     // 处理 fragment
@@ -394,7 +431,7 @@ export function createRenderer(options: RendererOptions) {
 }
 
 
-
+// 生成最长递增子序列
 function getSequence(arr: number[]): number[] {
     const p = arr.slice()
     const result = [0]
