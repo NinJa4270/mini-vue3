@@ -5,6 +5,7 @@ import { Fragment, isSameVNodeType, Text, VNode } from "./vnode";
 import { effect } from "../reactivity";
 import { EMPTY_OBJ } from "../shared";
 import { shouldUpdateComponent } from "./componentRenderUtils";
+import { queueJob } from "./scheduler";
 
 export interface RendererOptions {
     createElement: any
@@ -403,6 +404,8 @@ export function createRenderer(options: RendererOptions) {
                 instance.subTree = nextTree
                 patch(prevTree, nextTree, container, anchor, instance)
             }
+        }, {
+            scheduler: () => queueJob(instance.update)
         })
     }
 
