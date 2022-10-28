@@ -9,11 +9,13 @@ export interface RendererOptions {
     createElement: any
     patchProp: any
     insert: any
+    remove: any
+    setElementText: any
 }
 
 export function createRenderer(options: RendererOptions) {
 
-    const { createElement: hostCreateElement, patchProp: hostPatchProp, insert: hostInsert } = options
+    const { createElement: hostCreateElement, patchProp: hostPatchProp, insert: hostInsert, remove: hostRemove, setElementText: hostSetElementText } = options
 
     function render(vnode: VNode, container: HTMLElement,) {
         // patch
@@ -51,19 +53,23 @@ export function createRenderer(options: RendererOptions) {
             mountElement(n2, container, parentComponent)
         } else {
             // update
-            patchElement(n1, n2, container)
+            patchElement(n1, n2, container, parentComponent)
         }
     }
 
     // 更新 element
-    function patchElement(n1: VNode, n2: VNode, container: HTMLElement) {
+    function patchElement(n1: VNode, n2: VNode, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
         // 对比
-        // 对比props
+        const el = (n2.el = n1.el)
         const oldProps = n1.props || EMPTY_OBJ
         const newProps = n2.props || EMPTY_OBJ
-        const el = (n2.el = n1.el)
+
+        // 对比children
+        patchChildren(n1, n2, el, parentComponent!)
+        // 对比props
         patchProps(el, oldProps, newProps)
     }
+
     function patchProps(el: any, oldProps: any, newProps: any) {
         if (oldProps !== newProps) {
             // 处理新props
@@ -85,6 +91,46 @@ export function createRenderer(options: RendererOptions) {
             }
         }
     }
+    function patchChildren(n1: VNode, n2: VNode, container: any, parentComponent: ComponentInternalInstance) {
+        // 四种情况
+        // 1.新的 文本 ｜ 老的 数组
+        // 2.新的 文本 ｜ 老的 文本
+        // 3 新的 数组 ｜ 老的 文本
+        // 4.新的 数组 ｜ 老的 数组
+        const prevShapeFlag = n1.shapeFlag
+        const nextShapeFlag = n2.shapeFlag
+        const c1 = n1 && n1.children
+        const c2 = n2.children
+
+        // 新的是文本
+        if (nextShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+            if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+                // 第一种情况
+                // 1.清空 prev
+                unmountChildren(c1 as VNode[])
+                // 2.设置 next text
+            }
+            if (c1 !== c2) {
+                //  第一种 第二种都 走这里
+                hostSetElementText(container, c2)
+            }
+        } else {
+            // 新的是数组
+            // 第三种 老的是文本
+            if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+                hostSetElementText(container, '')
+                mountChildren(c2 as VNode[], container, parentComponent)
+            }
+        }
+    }
+    // 清空子节点
+    function unmountChildren(children: VNode[]) {
+        for (let i = 0, len = children.length; i < len; i++) {
+            const el = children[i].el
+            // 删除
+            hostRemove(el)
+        }
+    }
 
     function mountElement(vnode: VNode, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
         // 存到 vnode 上
@@ -95,7 +141,7 @@ export function createRenderer(options: RendererOptions) {
         if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
             el.textContent = children as string
         } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-            mountChildren(vnode, el, parentComponent)
+            mountChildren(vnode.children as VNode[], el, parentComponent)
         }
 
         // props
@@ -115,8 +161,8 @@ export function createRenderer(options: RendererOptions) {
         hostInsert(el, container)
     }
 
-    function mountChildren(vnode: VNode, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
-        (vnode.children as VNode[]).forEach((v: VNode) => {
+    function mountChildren(children: VNode[], container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
+        children.forEach((v: VNode) => {
             patch(null, v, container, parentComponent)
         })
     }
@@ -160,7 +206,7 @@ export function createRenderer(options: RendererOptions) {
 
     // 处理 fragment
     function processFragment(n1: VNode | null, n2: VNode, container: HTMLElement, parentComponent: ComponentInternalInstance | null) {
-        mountChildren(n2, container, parentComponent)
+        mountChildren(n2.children as VNode[], container, parentComponent)
     }
 
     // 处理 text
