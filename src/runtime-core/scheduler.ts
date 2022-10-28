@@ -26,6 +26,6 @@ function queueFlush() {
     resolvedPromise.then(flushJobs)
 }
 
-export function nextTick(fn) {
+export function nextTick(fn?: any) {
     return fn ? resolvedPromise.then(fn) : resolvedPromise
 }

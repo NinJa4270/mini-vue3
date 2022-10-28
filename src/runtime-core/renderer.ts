@@ -354,7 +354,7 @@ export function createRenderer(options: RendererOptions) {
         if (shouldUpdateComponent(n1, n2)) { // 判断当前组件是否需要更新
             // 调用组件的 render 重新生成vnode
             instance!.next = n2
-            instance.update()
+            instance!.update()
         } else {
             n2.el = n1.el
             instance!.vnode = n2
