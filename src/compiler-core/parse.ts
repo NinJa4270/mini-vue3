@@ -1,4 +1,4 @@
-import { createRoot, InterpolationNode, NodeTypes, TemplateChildNode } from "./ast";
+import { createRoot, ElementNode, InterpolationNode, NodeTypes, TemplateChildNode } from "./ast";
 
 export interface ParserContext {
     source: string
@@ -11,14 +11,58 @@ export function baseParse(content: string) {
 
 function parseChildren(context: ParserContext): TemplateChildNode[] {
     const nodes: TemplateChildNode[] = []
-    let node: TemplateChildNode
-    if (context.source.startsWith("{{")) {
+    const s = context.source
+    let node: TemplateChildNode | undefined = undefined
+    if (s.startsWith("{{")) {
         node = parseInterpolation(context)
+    } else if (s[0] === '<') {
+        if (/[a-z]/i.test(s[1])) {
+            console.log('%cparse.ts line:19 element', 'color: #007acc;',);
+            node = parseElement(context)
+        }
     }
-    nodes.push(node)
+    if (node) {
+        nodes.push(node)
+    }
     return nodes
 }
 
+// 处理元素
+function parseElement(context: ParserContext): ElementNode {
+    // <div></div>
+    // 解析tag
+    const element = parseTag(context, TagType.Start)
+
+    // 删除结束
+    parseTag(context, TagType.End)
+    // 删除解析结果
+    return element
+}
+
+
+const enum TagType {
+    Start,
+    End
+}
+// 解析 tag  开始标签/结束标签
+function parseTag(context: ParserContext, type: TagType.Start,): ElementNode
+function parseTag(context: ParserContext, type: TagType.End): void
+function parseTag(context: ParserContext, type: TagType): ElementNode | undefined {
+    const match: any = /^<\/?([a-z]*)/i.exec(context.source) // 结束
+    const tag = match[1]
+    advanceBy(context, match[0].length) // <div
+    advanceBy(context, 1) // >
+
+    if (type === TagType.End) {
+        return
+    }
+    return {
+        type: NodeTypes.ELEMENT,
+        tag
+    }
+}
+
+// 处理插值
 function parseInterpolation(context: ParserContext): InterpolationNode {
     // {{  message}}
     // delimiters
