@@ -10,6 +10,8 @@ export interface Node {
     type: NodeTypes
 }
 
+export type ParentNode = RootNode | ElementNode
+
 export interface BaseElementNode extends Node {
     tag: string,
     children: TemplateChildNode[]
@@ -20,7 +22,7 @@ export interface TextNode extends Node {
 }
 
 export type ElementNode = BaseElementNode
-interface RootNode {
+export interface RootNode {
     type: NodeTypes.ROOT,
     children: TemplateChildNode[]
 }
