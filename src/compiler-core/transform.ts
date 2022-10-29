@@ -1,8 +1,8 @@
 import { NodeTypes, RootNode, TemplateChildNode, ParentNode } from "./ast";
-import { TO_DISPLAY_STRING } from "./runtimeHelpers";
+import { CREATE_ELEMENT_BLOCK, TO_DISPLAY_STRING } from "./runtimeHelpers";
 
 
-export type NodeTransform = (node: RootNode | TemplateChildNode) => void | (() => void) | (() => void)[]
+export type NodeTransform = (node: RootNode | TemplateChildNode, context: TransformContext) => void | (() => void) | (() => void)[]
 
 interface TransformOptions {
     nodeTransforms?: NodeTransform[]
@@ -26,15 +26,15 @@ function traverseNode(node: RootNode | TemplateChildNode, context: TransformCont
     const { nodeTransforms } = context
     // 修改值
     for (let i = 0; i < nodeTransforms.length; i++) {
-        nodeTransforms[i](node)
+        nodeTransforms[i](node, context)
     }
-
     switch (node.type) {
         case NodeTypes.INTERPOLATION:
             context.helper(TO_DISPLAY_STRING)
             break
         case NodeTypes.ROOT:
         case NodeTypes.ELEMENT:
+            // context.helper(CREATE_ELEMENT_BLOCK)
             traverseChildren(node, context)
             break
     }

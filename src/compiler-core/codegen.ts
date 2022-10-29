@@ -1,5 +1,5 @@
-import { InterpolationNode, JSChildNode, NodeTypes, RootNode, SimpleExpressionNode, TemplateChildNode, TextNode } from "./ast";
-import { helperNameMap, TO_DISPLAY_STRING } from "./runtimeHelpers";
+import { ElementNode, InterpolationNode, JSChildNode, NodeTypes, RootNode, SimpleExpressionNode, TemplateChildNode, TextNode } from "./ast";
+import { CREATE_ELEMENT_VNODE, helperNameMap, TO_DISPLAY_STRING } from "./runtimeHelpers";
 
 interface CodegenContext {
     code: string
@@ -36,7 +36,11 @@ export function generate(ast: RootNode) {
 function genFunctionPreamble(ast: RootNode, context: CodegenContext) {
     const VueBinging = `Vue`
     const { push } = context
-    push(`const { ${ast.helpers.map(aliasHelper).join(', ')} } = ${VueBinging}`)
+    if (ast.helpers.length > 0) {
+        push(
+            `const { ${ast.helpers.map(aliasHelper).join(", ")}} = ${VueBinging} `
+        );
+    }
     push(`\n`)
     push(`return`)
 }
@@ -47,6 +51,9 @@ function genNode(node: CodegenNode, context: CodegenContext) {
         case NodeTypes.TEXT:
             genText(node as TextNode, context)
             break
+        case NodeTypes.ELEMENT:
+            genElement(node, context)
+            break
         case NodeTypes.SIMPLE_EXPRESSION:
             genExpression(node as SimpleExpressionNode, context)
             break
@@ -54,6 +61,13 @@ function genNode(node: CodegenNode, context: CodegenContext) {
             genInterpolation(node as InterpolationNode, context)
             break
     }
+}
+
+function genElement(node: ElementNode, context: CodegenContext) {
+    const { push, helper } = context
+    push(` "${helper(CREATE_ELEMENT_VNODE)}(`)
+    push(`"${node.tag}"`)
+    push(`)`)
 }
 
 function genText(node: TextNode, context: CodegenContext) {
