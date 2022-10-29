@@ -1,20 +1,50 @@
 lockfileVersion: 5.4
 
-specifiers:
-  '@rollup/plugin-node-resolve': ^15.0.1
-  '@rollup/plugin-typescript': ^9.0.2
-  rollup: ^3.2.3
-  tslib: ^2.4.0
-  typescript: ^4.8.4
-  vitest: ^0.24.3
+importers:
 
-devDependencies:
-  '@rollup/plugin-node-resolve': 15.0.1_rollup@3.2.3
-  '@rollup/plugin-typescript': 9.0.2_bvn3ed5hy3sfde644tygjdj4ia
-  rollup: 3.2.3
-  tslib: 2.4.0
-  typescript: 4.8.4
-  vitest: 0.24.3
+  .:
+    specifiers:
+      '@rollup/plugin-node-resolve': ^15.0.1
+      '@rollup/plugin-typescript': ^9.0.2
+      rollup: ^3.2.3
+      tslib: ^2.4.0
+      typescript: ^4.8.4
+      vitest: ^0.24.3
+    devDependencies:
+      '@rollup/plugin-node-resolve': 15.0.1_rollup@3.2.3
+      '@rollup/plugin-typescript': 9.0.2_bvn3ed5hy3sfde644tygjdj4ia
+      rollup: 3.2.3
+      tslib: 2.4.0
+      typescript: 4.8.4
+      vitest: 0.24.3
+
+  packages/reactivity:
+    specifiers:
+      '@ninja/shared': workspace:^1.0.0
+    dependencies:
+      '@ninja/shared': link:../shared
+
+  packages/runtime-core:
+    specifiers:
+      '@ninja/reactivity': workspace:^1.0.0
+      '@ninja/shared': workspace:^1.0.0
+    dependencies:
+      '@ninja/reactivity': link:../reactivity
+      '@ninja/shared': link:../shared
+
+  packages/runtime-dom:
+    specifiers:
+      '@ninja/runtime-core': workspace:^1.0.0
+    dependencies:
+      '@ninja/runtime-core': link:../runtime-core
+
+  packages/vue:
+    specifiers:
+      '@ninja/compiler-core': workspace:^1.0.0
+      '@ninja/runtime-dom': workspace:^1.0.0
+    dependencies:
+      '@ninja/compiler-core': link:../compiler-core
+      '@ninja/runtime-dom': link:../runtime-dom
 
 packages:
 
