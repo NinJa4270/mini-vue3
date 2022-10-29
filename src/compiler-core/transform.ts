@@ -1,4 +1,5 @@
 import { NodeTypes, RootNode, TemplateChildNode, ParentNode } from "./ast";
+import { TO_DISPLAY_STRING } from "./runtimeHelpers";
 
 
 export type NodeTransform = (node: RootNode | TemplateChildNode) => void | (() => void) | (() => void)[]
@@ -7,7 +8,6 @@ interface TransformOptions {
     nodeTransforms?: NodeTransform[]
 }
 
-
 export function transform(root: RootNode, options: TransformOptions) {
     const context = createTransformContext(root, options)
     // 遍历 - 深度优先
@@ -15,6 +15,7 @@ export function transform(root: RootNode, options: TransformOptions) {
 
     createRootCodegen(root)
 
+    root.helpers = [...context.helpers.keys()]
 }
 
 function createRootCodegen(root: RootNode) {
@@ -27,8 +28,15 @@ function traverseNode(node: RootNode | TemplateChildNode, context: TransformCont
     for (let i = 0; i < nodeTransforms.length; i++) {
         nodeTransforms[i](node)
     }
-    if (node.type === NodeTypes.ROOT || node.type === NodeTypes.ELEMENT) {
-        traverseChildren(node, context)
+
+    switch (node.type) {
+        case NodeTypes.INTERPOLATION:
+            context.helper(TO_DISPLAY_STRING)
+            break
+        case NodeTypes.ROOT:
+        case NodeTypes.ELEMENT:
+            traverseChildren(node, context)
+            break
     }
 }
 
@@ -43,12 +51,20 @@ function traverseChildren(parent: ParentNode, context: TransformContext) {
 }
 
 interface TransformContext {
-    nodeTransforms: NodeTransform[]
+    nodeTransforms: NodeTransform[],
+    helpers: Map<symbol, number>
+    helper<T extends symbol>(name: T): T
 }
 
-function createTransformContext(root: RootNode, { nodeTransforms = [], }: TransformOptions): TransformContext {
+function createTransformContext(root: RootNode, { nodeTransforms = [] }: TransformOptions): TransformContext {
     const context: TransformContext = {
         nodeTransforms,
+        helpers: new Map(),
+        helper(name) {
+            const count = context.helpers.get(name) || 0
+            context.helpers.set(name, count + 1)
+            return name
+        },
     }
     return context
 }
