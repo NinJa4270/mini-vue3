@@ -11,7 +11,8 @@ export interface Node {
 }
 
 export interface BaseElementNode extends Node {
-    tag: string
+    tag: string,
+    children: TemplateChildNode[]
 }
 export interface TextNode extends Node {
     type: NodeTypes.TEXT

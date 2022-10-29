@@ -6,29 +6,41 @@ export interface ParserContext {
 
 export function baseParse(content: string) {
     const context = createParserContext(content)
-    return createRoot(parseChildren(context))
+    return createRoot(parseChildren(context, []))
 }
 
-function parseChildren(context: ParserContext): TemplateChildNode[] {
+function parseChildren(context: ParserContext, ancestors: ElementNode[]): TemplateChildNode[] {
     const nodes: TemplateChildNode[] = []
-    const s = context.source
-    let node: TemplateChildNode | undefined = undefined
-    if (s.startsWith("{{")) {
-        node = parseInterpolation(context)
-    } else if (s[0] === '<') {
-        if (/[a-z]/i.test(s[1])) {
-            node = parseElement(context)
+    while (!isEnd(context, ancestors)) {
+        const s = context.source
+        let node: TemplateChildNode | undefined = undefined
+        if (startsWith(s, '{{')) {
+            node = parseInterpolation(context)
+        } else if (s[0] === '<') {
+            if (/[a-z]/i.test(s[1])) {
+                node = parseElement(context, ancestors)
+            }
         }
+        if (!node) {
+            node = parseText(context)
+        }
+        nodes.push(node)
     }
-    if (!node) {
-        node = parseText(context)
-    }
-    nodes.push(node)
+
     return nodes
 }
 
 function parseText(context: ParserContext): TextNode {
-    const content = parseTextData(context, context.source.length)
+    const endTokens = ['{{', '<']
+    let endIndex = context.source.length
+
+    for (let i = 0; i < endTokens.length; i++) {
+        const index = context.source.indexOf(endTokens[i])
+        if (index !== -1 && endIndex > index) {
+            endIndex = index
+        }
+    }
+    const content = parseTextData(context, endIndex)
     return {
         type: NodeTypes.TEXT,
         content,
@@ -41,18 +53,45 @@ function parseTextData(context: ParserContext, length: number) {
     return content
 }
 
-
 // 处理元素
-function parseElement(context: ParserContext): ElementNode {
+function parseElement(context: ParserContext, ancestors: ElementNode[]): ElementNode {
     // <div></div>
     // 解析tag
     const element = parseTag(context, TagType.Start)
-    // 删除结束
-    parseTag(context, TagType.End)
+    ancestors.push(element) // 收集tag栈
+    const children = parseChildren(context, ancestors)
+    element.children = children
+    ancestors.pop() // 弹出tag栈
 
+    // 相同
+    if (startsWithEndTagOpen(context.source, element.tag)) {
+        // 删除结束
+        parseTag(context, TagType.End)
+    } else {
+        throw new Error(`Element is missing end tag. ${element.tag}`)
+    }
     return element
 }
 
+// 当前children 是否结束
+function isEnd(context: ParserContext, ancestors: ElementNode[]) {
+    const s = context.source
+    // 遇到结束标签
+    // if (parentTag && s.startsWith(`</${parentTag}>`)) {
+    //     return true
+    // }
+    if (startsWith(s, '</')) {
+        for (let i = ancestors.length - 1; i >= 0; i--) { 
+            const tag = ancestors[i].tag
+            // </div>
+            if (startsWithEndTagOpen(s, tag)) {
+                return true
+            }
+        }
+    }
+    // source 没有值 结束 
+    return !s
+}
 
 const enum TagType {
     Start,
@@ -73,7 +112,8 @@ function parseTag(context: ParserContext, type: TagType): ElementNode | undefine
     }
     return {
         type: NodeTypes.ELEMENT,
-        tag
+        tag,
+        children: []
     }
 }
 
@@ -108,9 +148,16 @@ function advanceBy(context: ParserContext, numberOfCharacters: number): void {
     context.source = source.slice(numberOfCharacters)
 }
 
-
 function createParserContext(content: string): ParserContext {
     return {
         source: content
     }
+}
+
+function startsWithEndTagOpen(source: string, tag: string) {
+    return startsWith(source, '<') && source.slice(2, 2 + tag.length).toLowerCase() === tag.toLowerCase()
+}
+
+function startsWith(source: string, searchString: string): boolean {
+    return source.startsWith(searchString)
 }
