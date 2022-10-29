@@ -25,6 +25,7 @@ export type ElementNode = BaseElementNode
 export interface RootNode {
     type: NodeTypes.ROOT,
     children: TemplateChildNode[]
+    codegenNode?: TemplateChildNode
 }
 
 export interface SimpleExpressionNode extends Node {

@@ -12,6 +12,13 @@ export function transform(root: RootNode, options: TransformOptions) {
     const context = createTransformContext(root, options)
     // 遍历 - 深度优先
     traverseNode(root, context)
+
+    createRootCodegen(root)
+
+}
+
+function createRootCodegen(root: RootNode) {
+    root.codegenNode = root.children[0]
 }
 
 function traverseNode(node: RootNode | TemplateChildNode, context: TransformContext) {
