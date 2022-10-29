@@ -1,5 +1,5 @@
 import { expect, test, describe } from 'vitest'
-import { NodeTypes } from '../ast'
+import { ElementTypes, NodeTypes } from '../ast'
 import { baseParse } from '../parse'
 describe('parse', () => {
     test('interpolation', () => {
@@ -19,7 +19,10 @@ describe('parse', () => {
         expect(ast.children[0]).toStrictEqual({
             type: NodeTypes.ELEMENT,
             tag: "div",
-            children: []
+            children: [],
+            codegenNode: undefined,
+            props: null,
+            tagType: ElementTypes.ELEMENT,
         })
     })
 
@@ -37,6 +40,9 @@ describe('parse', () => {
         expect(ast.children[0]).toStrictEqual({
             type: NodeTypes.ELEMENT,
             tag: "p",
+            codegenNode: undefined,
+            props: null,
+            tagType: ElementTypes.ELEMENT,
             children: [
                 {
                     type: NodeTypes.TEXT,
@@ -58,10 +64,16 @@ describe('parse', () => {
         expect(ast.children[0]).toStrictEqual({
             type: NodeTypes.ELEMENT,
             tag: "div",
+            codegenNode: undefined,
+            props: null,
+            tagType: ElementTypes.ELEMENT,
             children: [
                 {
                     type: NodeTypes.ELEMENT,
                     tag: "p",
+                    codegenNode: undefined,
+                    props: null,
+                    tagType: ElementTypes.ELEMENT,
                     children: [
                         {
                             type: NodeTypes.TEXT,
@@ -91,6 +103,9 @@ describe('parse', () => {
         expect(ast.children[0]).toStrictEqual({
             type: NodeTypes.ELEMENT,
             tag: "div",
+            codegenNode: undefined,
+            props: null,
+            tagType: ElementTypes.ELEMENT,
             children: [
                 {
                     type: NodeTypes.TEXT,
@@ -99,6 +114,9 @@ describe('parse', () => {
                 {
                     type: NodeTypes.ELEMENT,
                     tag: "p",
+                    codegenNode: undefined,
+                    props: null,
+                    tagType: ElementTypes.ELEMENT,
                     children: [
                         {
                             type: NodeTypes.TEXT,
@@ -117,11 +135,14 @@ describe('parse', () => {
         })
     })
 
-    test.only('combination nested ast 3', () => {
+    test('combination nested ast 3', () => {
         const ast = baseParse("<div>h1, <p>nested ast</p>{{ message }}<span>{{test}}</span></div>")
         expect(ast.children[0]).toStrictEqual({
             type: NodeTypes.ELEMENT,
             tag: "div",
+            codegenNode: undefined,
+            props: null,
+            tagType: ElementTypes.ELEMENT,
             children: [
                 {
                     type: NodeTypes.TEXT,
@@ -130,10 +151,13 @@ describe('parse', () => {
                 {
                     type: NodeTypes.ELEMENT,
                     tag: "p",
+                    codegenNode: undefined,
+                    tagType: ElementTypes.ELEMENT,
+                    props: null,
                     children: [
                         {
                             type: NodeTypes.TEXT,
-                            content: "nested ast"
+                            content: "nested ast",
                         }
                     ]
                 },
@@ -147,6 +171,9 @@ describe('parse', () => {
                 {
                     type: NodeTypes.ELEMENT,
                     tag: "span",
+                    codegenNode: undefined,
+                    tagType: ElementTypes.ELEMENT,
+                    props: null,
                     children: [
                         {
                             type: NodeTypes.INTERPOLATION,

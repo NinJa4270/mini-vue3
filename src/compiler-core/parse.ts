@@ -1,4 +1,4 @@
-import { createRoot, ElementNode, InterpolationNode, NodeTypes, TemplateChildNode, TextNode } from "./ast";
+import { createRoot, ElementNode, ElementTypes, InterpolationNode, NodeTypes, TemplateChildNode, TextNode } from "./ast";
 
 export interface ParserContext {
     source: string
@@ -81,7 +81,7 @@ function isEnd(context: ParserContext, ancestors: ElementNode[]) {
     //     return true
     // }
     if (startsWith(s, '</')) {
-        for (let i = ancestors.length - 1; i >= 0; i--) { 
+        for (let i = ancestors.length - 1; i >= 0; i--) {
             const tag = ancestors[i].tag
             // </div>
             if (startsWithEndTagOpen(s, tag)) {
@@ -113,7 +113,10 @@ function parseTag(context: ParserContext, type: TagType): ElementNode | undefine
     return {
         type: NodeTypes.ELEMENT,
         tag,
-        children: []
+        tagType: ElementTypes.ELEMENT,
+        children: [],
+        props: null,
+        codegenNode: undefined
     }
 }
 

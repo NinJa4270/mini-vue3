@@ -1,6 +1,16 @@
-import { CREATE_ELEMENT_VNODE } from "../runtimeHelpers"
+import { createVNodeCall, NodeTypes, TemplateTextChildNode } from "../ast"
 import { NodeTransform } from "../transform"
 
 export const transformElement: NodeTransform = (node, context) => {
-    context.helper(CREATE_ELEMENT_VNODE)
+    return () => {
+        if (node.type === NodeTypes.ELEMENT) {
+            const { tag, children, props } = node
+            // tag
+            let vnodeTag = `'${tag}'`
+            // pros
+            let vnodeProps = props
+            let vnodeChildren = children[0] as TemplateTextChildNode
+            node.codegenNode = createVNodeCall(context, vnodeTag, props, vnodeChildren)
+        }
+    }
 }

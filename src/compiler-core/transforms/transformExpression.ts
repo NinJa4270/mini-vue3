@@ -3,7 +3,7 @@ import { NodeTransform } from "../transform";
 
 export const transformExpression: NodeTransform = (node, context) => {
     if (node.type === NodeTypes.INTERPOLATION) {
-        (node as InterpolationNode).content = processExpression((node as InterpolationNode).content)
+        (node as InterpolationNode).content = processExpression((node as InterpolationNode).content as SimpleExpressionNode)
     }
 }
 

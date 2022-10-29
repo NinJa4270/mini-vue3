@@ -1,5 +1,5 @@
 import { NodeTypes, RootNode, TemplateChildNode, ParentNode } from "./ast";
-import { CREATE_ELEMENT_BLOCK, TO_DISPLAY_STRING } from "./runtimeHelpers";
+import { TO_DISPLAY_STRING } from "./runtimeHelpers";
 
 
 export type NodeTransform = (node: RootNode | TemplateChildNode, context: TransformContext) => void | (() => void) | (() => void)[]
@@ -19,14 +19,21 @@ export function transform(root: RootNode, options: TransformOptions) {
 }
 
 function createRootCodegen(root: RootNode) {
-    root.codegenNode = root.children[0]
+    const child = root.children[0]
+    if (child.type === NodeTypes.ELEMENT) {
+        root.codegenNode = child.codegenNode
+    } else {
+        root.codegenNode = root.children[0]
+    }
 }
 
 function traverseNode(node: RootNode | TemplateChildNode, context: TransformContext) {
     const { nodeTransforms } = context
     // 修改值
+    const exitFns: any = [] // 退出时 需要执行的插件
     for (let i = 0; i < nodeTransforms.length; i++) {
-        nodeTransforms[i](node, context)
+        const onExit = nodeTransforms[i](node, context)
+        if (onExit) exitFns.push(onExit)
     }
     switch (node.type) {
         case NodeTypes.INTERPOLATION:
@@ -37,6 +44,11 @@ function traverseNode(node: RootNode | TemplateChildNode, context: TransformCont
             // context.helper(CREATE_ELEMENT_BLOCK)
             traverseChildren(node, context)
             break
+    }
+
+    let i = exitFns.length
+    while (i--) {
+        exitFns[i]()
     }
 }
 
@@ -50,7 +62,7 @@ function traverseChildren(parent: ParentNode, context: TransformContext) {
     }
 }
 
-interface TransformContext {
+export interface TransformContext {
     nodeTransforms: NodeTransform[],
     helpers: Map<symbol, number>
     helper<T extends symbol>(name: T): T

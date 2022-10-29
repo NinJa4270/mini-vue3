@@ -4,6 +4,7 @@ import { baseParse } from '../parse'
 import { transform } from '../transform'
 import { transformElement } from '../transforms/transformElement'
 import { transformExpression } from '../transforms/transformExpression'
+import { transformText } from '../transforms/transformText'
 describe('codegen', () => {
 
     test('codegen text', () => {
@@ -29,6 +30,16 @@ describe('codegen', () => {
         const ast = baseParse("<div></div>")
         transform(ast, {
             nodeTransforms: [transformElement]
+        })
+        const { code } = generate(ast)
+        // 快照测试
+        expect(code).matchSnapshot()
+    })
+
+    test('codegen combination', () => {
+        const ast = baseParse("<div>hi, {{message}}</div>")
+        transform(ast, {
+            nodeTransforms: [transformExpression, transformElement, transformText]
         })
         const { code } = generate(ast)
         // 快照测试
