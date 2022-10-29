@@ -1,7 +1,6 @@
 import { baseCompile } from './compiler-core'
 
 export * from './runtime-dom'
-export * from './reactivity'
 import * as runtimeDom from './runtime-dom'
 import { registerRuntimeCompiler } from './runtime-dom'
 

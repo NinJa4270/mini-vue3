@@ -2,10 +2,12 @@ import { createApp, ref } from '../../lib/mini-vue.esm.js'
 
 const App = {
     name: 'App',
-    template: `<div>hi, {{message}}</div>`,
+    template: `<div>hi, {{count}} - {{message}}</div>`,
     setup() {
+        const count = window.count = ref(1)
         return {
-            message: "min-vue"
+            count,
+            message: "mini-vue"
         }
     },
 }
