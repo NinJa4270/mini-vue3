@@ -1,4 +1,4 @@
-import { createRoot, ElementNode, InterpolationNode, NodeTypes, TemplateChildNode } from "./ast";
+import { createRoot, ElementNode, InterpolationNode, NodeTypes, TemplateChildNode, TextNode } from "./ast";
 
 export interface ParserContext {
     source: string
@@ -20,11 +20,27 @@ function parseChildren(context: ParserContext): TemplateChildNode[] {
             node = parseElement(context)
         }
     }
-    if (node) {
-        nodes.push(node)
+    if (!node) {
+        node = parseText(context)
     }
+    nodes.push(node)
     return nodes
 }
+
+function parseText(context: ParserContext): TextNode {
+    const content = parseTextData(context, context.source.length)
+    return {
+        type: NodeTypes.TEXT,
+        content,
+    }
+}
+
+function parseTextData(context: ParserContext, length: number) {
+    const content = context.source.slice(0, length)
+    advanceBy(context, length)
+    return content
+}
+
 
 // 处理元素
 function parseElement(context: ParserContext): ElementNode {
@@ -33,7 +49,7 @@ function parseElement(context: ParserContext): ElementNode {
     const element = parseTag(context, TagType.Start)
     // 删除结束
     parseTag(context, TagType.End)
-    
+
     return element
 }
 
@@ -72,9 +88,9 @@ function parseInterpolation(context: ParserContext): InterpolationNode {
     advanceBy(context, open.length)
 
     const rawContentLength = closeIndex - open.length
-    const rawContent = context.source.slice(0, rawContentLength)
+    // const rawContent = context.source.slice(0, rawContentLength)
+    const rawContent = parseTextData(context, rawContentLength)
     const content = rawContent.trim()
-    advanceBy(context, rawContentLength)
 
     advanceBy(context, close.length)
 

@@ -1,5 +1,6 @@
 export const enum NodeTypes {
     ELEMENT,
+    TEXT,
     INTERPOLATION,
     SIMPLE_EXPRESSION,
     ROOT
@@ -11,6 +12,10 @@ export interface Node {
 
 export interface BaseElementNode extends Node {
     tag: string
+}
+export interface TextNode extends Node {
+    type: NodeTypes.TEXT
+    content: string
 }
 
 export type ElementNode = BaseElementNode
@@ -31,7 +36,7 @@ export interface InterpolationNode extends Node {
     content: ExpressionNode
 }
 
-export type TemplateChildNode = InterpolationNode | ElementNode
+export type TemplateChildNode = InterpolationNode | ElementNode | TextNode
 
 
 

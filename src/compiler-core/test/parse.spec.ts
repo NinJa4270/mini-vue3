@@ -23,4 +23,12 @@ describe('parse', () => {
             tag: "div"
         })
     })
+
+    test('text', () => {
+        const ast = baseParse("text value")
+        expect(ast.children[0]).toStrictEqual({
+            type: NodeTypes.TEXT,
+            content: "text value"
+        })
+    })
 })
