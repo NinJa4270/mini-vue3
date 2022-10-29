@@ -1,4 +1,4 @@
-import { createApp, ref, baseCompile } from '../../lib/mini-vue.esm.js'
+import { createApp, ref } from '../../lib/mini-vue.esm.js'
 
 const App = {
     name: 'App',

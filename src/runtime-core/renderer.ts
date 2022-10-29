@@ -373,9 +373,8 @@ export function createRenderer(options: RendererOptions) {
         instance!.update = effect(() => {
             if (!instance.isMounted) {
                 // 初始化
-                console.log('%crenderer.ts line:372 mount', 'color: #007acc;', instance);
                 const { proxy } = instance
-                const subTree = (instance.subTree = instance.render.call(proxy))
+                const subTree = (instance.subTree = instance.render.call(proxy, proxy))
                 // vnode => patch
                 // vnode => element => mountElement
                 patch(null, subTree, container, anchor, instance)

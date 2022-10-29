@@ -5,6 +5,7 @@ import { PublicInstanceProxyHandlers } from "./componentPublicInstance"
 import { initSlots } from "./componentSlots"
 import { VNode } from "./vnode"
 
+let compiler: any
 export interface ComponentInternalInstance {
     proxy: any
     render: any
@@ -78,9 +79,13 @@ function handleSetupResult(instance: ComponentInternalInstance, setupResult: any
 }
 function finishComponentSetup(instance: ComponentInternalInstance) {
     const component = instance.type
-    if (component.render) {
-        instance.render = component.render
+
+    if (compiler && !component.render) {
+        if (component.template) {
+            component.render = compiler(component.template)
+        }
     }
+    instance.render = component.render
 }
 let currentInstance: ComponentInternalInstance | null = null
 export function getCurrentInstance() {
@@ -89,4 +94,9 @@ export function getCurrentInstance() {
 
 function setCurrentInstance(instance: ComponentInternalInstance | null) {
     currentInstance = instance
+}
+
+
+export function registerRuntimeCompiler(_compiler: any) {
+    compiler = _compiler
 }

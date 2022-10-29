@@ -21,6 +21,8 @@ export interface VNode {
 }
 
 
+export { createVNode as createElementVNode }
+
 export function createVNode(type: VNodeTypes, props?: any, children?: any) {
     const shapeFlag = isString(type) ? ShapeFlags.ELEMENT : ShapeFlags.STATEFUL_COMPONENT
     const vnode: VNode = {

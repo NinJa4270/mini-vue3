@@ -11,5 +11,5 @@ export function baseCompile(template: string) {
     transform(ast, {
         nodeTransforms: [transformExpression, transformElement, transformText]
     })
-    const { code } = generate(ast)
+    return generate(ast)
 }
