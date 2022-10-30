@@ -1,4 +1,5 @@
 const queue: any[] = []
+const activePostFlushCbs: any[] = []
 
 let isFlushPending = false
 
@@ -14,11 +15,25 @@ export function queueJob(job: any) {
 
 function flushJobs() {
     isFlushPending = false
+    flushPostFlushCbs()
     let job
     while (job = queue.shift()) {
         job && job()
     }
 }
+
+function flushPostFlushCbs() {
+    for (let i = 0; i < activePostFlushCbs.length; i++) {
+        activePostFlushCbs[i]()
+    }
+}
+
+export function queuePostFlushCb(cb: any) {
+    activePostFlushCbs.push(cb)
+    queueFlush()
+}
+
+
 
 function queueFlush() {
     if (isFlushPending) return
